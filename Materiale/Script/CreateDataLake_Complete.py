@@ -95,6 +95,7 @@ tedx_dataset_agg_f.printSchema()
 
 mongo_uri = "mongodb://clustertcm-shard-00-00.nvexe.mongodb.net:27017,clustertcm-shard-00-01.nvexe.mongodb.net:27017,clustertcm-shard-00-02.nvexe.mongodb.net:27017"
 ########### "mongodb://tcm-shard-00-00.d0u9l.mongodb.net:27017,tcm-shard-00-01.d0u9l.mongodb.net:27017,tcm-shard-00-02.d0u9l.mongodb.net:27017"
+#mongo_uri = "mongodb://clustertcm-shard-00-00.nvexe.mongodb.net:27017,clustertcm-shard-00-01.nvexe.mongodb.net:27017,clustertcm-shard-00-02.nvexe.mongodb.net:27017"
 
 write_mongo_options = {
     "uri": mongo_uri,
