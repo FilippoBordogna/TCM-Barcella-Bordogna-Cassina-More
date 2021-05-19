@@ -18,6 +18,7 @@ from awsglue.job import Job
 ##### FROM FILES
 tedx_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tedx_dataset_complete.csv"
 ################### "s3://bucket-dati/tedx_dataset.csv"
+#tedx_dataset_path = "s3://unibg-tcm-lab/tedx_dataset.csv"
 
 ###### READ PARAMETERS
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
@@ -57,10 +58,12 @@ print(f"Number of items from RAW DATA with NOT NULL KEY {count_items_null}")
 ## READ TAGS DATASET
 tags_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tags_dataset.csv"
 ################### "s3://bucket-dati/tags_dataset.csv"
+#tags_dataset_path = "s3://unibg-tcm-lab/tags_dataset.csv"
 tags_dataset = spark.read.option("header","true").csv(tags_dataset_path)
 
 ## READ WATCH NEXT DATASET
 watch_next_dataset_path = "s3://unibg-data-2021-bordogna-filippo/watch_next_dataset.csv"
+#watch_next_dataset_path = "s3://unibg-tcm-lab/watch_next_dataset.csv"
 watch_next_dataset = spark.read.option("header","true").csv(watch_next_dataset_path)
 ######################### "s3://bucket-dati/watch_next_dataset.csv"
 
