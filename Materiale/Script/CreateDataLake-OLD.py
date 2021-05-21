@@ -17,6 +17,8 @@ from awsglue.job import Job
 
 ##### FROM FILES
 tedx_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tedx_dataset.csv"
+#barce#tedx_dataset_path = "s3://bucket-dati/tedx_dataset.csv"
+#cassi#tedx_dataset_path = "s3://unibg-tcm-lab/tedx_dataset.csv"
 
 ###### READ PARAMETERS
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
@@ -55,6 +57,9 @@ print(f"Number of items from RAW DATA with NOT NULL KEY {count_items_null}")
 
 ## READ TAGS DATASET
 tags_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tags_dataset.csv"
+#barce# tags_dataset_path = "s3://bucket-dati/tags_dataset.csv"
+#cassi# tags_dataset_path = "s3://unibg-tcm-lab/tags_dataset.csv"
+
 tags_dataset = spark.read.option("header","true").csv(tags_dataset_path)
 
 
@@ -69,10 +74,9 @@ tedx_dataset_agg = tedx_dataset.join(tags_dataset_agg, tedx_dataset.idx == tags_
 
 tedx_dataset_agg.printSchema()
 
-
-
-
 mongo_uri = "mongodb://clustertcm-shard-00-00.nvexe.mongodb.net:27017,clustertcm-shard-00-01.nvexe.mongodb.net:27017,clustertcm-shard-00-02.nvexe.mongodb.net:27017"
+#barce# mongo_uri = "mongodb://tcm-shard-00-00.d0u9l.mongodb.net:27017,tcm-shard-00-01.d0u9l.mongodb.net:27017,tcm-shard-00-02.d0u9l.mongodb.net:27017"
+#cassi# mongo_uri = "mongodb://mycluster-shard-00-00.r8cy1.mongodb.net:27017,mycluster-shard-00-01.r8cy1.mongodb.net:27017,mycluster-shard-00-02.r8cy1.mongodb.net:27017"
 
 write_mongo_options = {
     "uri": mongo_uri,
