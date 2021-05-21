@@ -15,7 +15,7 @@ from awsglue.job import Job
 ##### FROM FILES
 tedx_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tedx_dataset_complete.csv"
 #barce#tedx_dataset_path = "s3://bucket-dati/tedx_dataset_complete.csv"
-#cassi#tedx_dataset_path = "s3://unibg-tcm-lab/tedx_dataset.csv" #CAMBIA CON IL NUOVO FILE CIULA
+#cassi#tedx_dataset_path = "s3://unibg-tcm-lab/tedx_dataset_complete.csv"
 
 ###### READ PARAMETERS
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
