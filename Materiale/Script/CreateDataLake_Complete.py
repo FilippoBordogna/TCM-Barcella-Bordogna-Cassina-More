@@ -35,7 +35,8 @@ tedx_dataset = spark.read \
     .option("quote", "\"") \
     .option("escape", "\"") \
     .option("multiline","true").csv(tedx_dataset_path)
-    
+
+tedx_dataset=tedx_dataset.dropDuplicates()    
 #tedx_dataset.printSchema()
 
 #### FILTER ITEMS WITH NULL POSTING KEY
@@ -74,8 +75,16 @@ watch_next_dataset = spark.read.option("header","true").csv(watch_next_dataset_p
 # DROP THE DUPLICATE ROWS
 watch_next_dataset=watch_next_dataset.dropDuplicates()
 
+# RENAME COLOUMNS TO AVOID DUPLICATES AFTER JOIN
+watch_next_dataset=watch_next_dataset.select(col("idx").alias("id"), col("*")).drop("idx")
+watch_next_dataset=watch_next_dataset.select(col("url").alias("link"), col("*")).drop("url")
+
+# JOIN BETWEEN WATCH-NEXT AND TALKS INFORMATION
+watch_next_dataset=watch_next_dataset.join(tedx_dataset,tedx_dataset.idx == watch_next_dataset.watch_next_idx)
+watch_next_dataset.printSchema()
+
 # AGGREGATE THE WATCH-NEXT
-watch_next_dataset_agg=watch_next_dataset.groupBy(col("idx").alias("idx_ref_2")).agg(collect_list(struct("url", "watch_next_idx")).alias("watch_next"))
+watch_next_dataset_agg=watch_next_dataset.groupBy(col("id").alias("idx_ref_2")).agg(collect_list(struct("url","watch_next_idx","main_speaker","title","details","posted","num_views")).alias("watch_next"))
 #watch_next_dataset_agg.printSchema()
 
 # JOIN BETWEEN THE DATA AGGREGATE BEFORE AND THE WATCH-NEXT
