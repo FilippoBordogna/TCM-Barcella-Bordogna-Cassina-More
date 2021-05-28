@@ -4,7 +4,7 @@ const connect_to_db = require('./db');
 
 const talk = require('./Talk');
 
-module.exports.get_talks_by_durate = (event, context, callback) => {
+module.exports.get_transcriptions_by_id = (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
     console.log('Received event:', JSON.stringify(event, null, 2));
     let body = {}
@@ -12,32 +12,18 @@ module.exports.get_talks_by_durate = (event, context, callback) => {
         body = JSON.parse(event.body)
     }
     // set default
-    
-    if(!body.max_durate) {
+    if(!body.id) {
         callback(null, {
                     statusCode: 500,
                     headers: { 'Content-Type': 'text/plain' },
-                    body: 'Could not fetch the talks. Max_Durate is null.'
+                    body: 'Could not fetch the id. Id is null.'
         })
     }
     
-    if (!body.min_durate) {
-        body.min_durate = 0
-    }
-
-    
-    if (!body.doc_per_page) {
-        body.doc_per_page = 10
-    }
-    if (!body.page) {
-        body.page = 1
-    }
-    
     connect_to_db().then(() => {
-        console.log('=> get_most_viewed talks');
-        talk.find({durate_sec : {$lt: body.max_durate, $gt: body.min_durate}},{_id: 1, title: 1,main_speaker: 1, details :1, posted: 1, url: 1, n_views:1, durate_sec: 1, tags: 1})
-            .skip((body.doc_per_page * body.page) - body.doc_per_page)
-            .limit(body.doc_per_page)
+        console.log('=> get the id');
+        talk.find({_id: body.id})
+            .select("transcriptions")
             .then(talks => {
                     callback(null, {
                         statusCode: 200,
@@ -49,7 +35,7 @@ module.exports.get_talks_by_durate = (event, context, callback) => {
                 callback(null, {
                     statusCode: err.statusCode || 500,
                     headers: { 'Content-Type': 'text/plain' },
-                    body: 'Could not fetch the talks.'
+                    body: 'Could not fetch the id.'
                 })
             );
     });

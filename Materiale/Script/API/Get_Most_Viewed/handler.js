@@ -22,7 +22,7 @@ module.exports.get_most_viewed = (event, context, callback) => {
     
     connect_to_db().then(() => {
         console.log('=> get the id');
-        talk.find({},{main_speaker: 1, title: 1, details: 1, posted: 1, url: 1, n_views: 1, durate_sec: 1, tags: 1})
+        talk.find({},{_id: 1, main_speaker: 1, title: 1, details: 1, posted: 1, url: 1, n_views: 1, durate_sec: 1, tags: 1})
             .sort({n_views: -1})
             .skip((body.doc_per_page * body.page) - body.doc_per_page)
             .limit(body.doc_per_page)
