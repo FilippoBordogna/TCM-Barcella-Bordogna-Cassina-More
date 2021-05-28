@@ -6,8 +6,8 @@ const talk_schema = new mongoose.Schema({
     details: String,
     posted: String,
     url: String,
-    num_views: String,
-    durate: String,
+    n_views: Number,
+    durate_sec: Number,
     tags: Array
 }, { collection: 'tedx_data' });
 
