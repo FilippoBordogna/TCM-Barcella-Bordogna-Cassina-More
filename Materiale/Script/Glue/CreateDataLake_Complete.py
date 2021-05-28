@@ -5,6 +5,7 @@ import sys
 import json
 import pyspark
 from pyspark.sql.functions import col, collect_list, array_join, struct
+from pyspark.sql.types import DoubleType
 
 from awsglue.transforms import *
 from awsglue.utils import getResolvedOptions
@@ -61,7 +62,11 @@ tags_dataset_agg = tags_dataset.groupBy(col("idx").alias("idx_ref")).agg(collect
 tedx_dataset_agg = tedx_dataset.join(tags_dataset_agg, tedx_dataset.idx == tags_dataset_agg.idx_ref, "left") \
     .drop("idx_ref") \
     .select(col("idx").alias("_id"), col("*")) \
-    .drop("idx") \
+    .select(col("durate").cast(DoubleType()).alias("durate_sec"), col("*")) \
+    .select(col("num_views").cast(DoubleType()).alias("n_views"), col("*")) \
+    .drop("durate") \
+    .drop("num_views") \
+    .drop("idx") 
    
 #tedx_dataset_agg.printSchema()
 
@@ -80,18 +85,38 @@ watch_next_dataset=watch_next_dataset.select(col("idx").alias("id"), col("*")).d
 watch_next_dataset=watch_next_dataset.select(col("url").alias("link"), col("*")).drop("url")
 
 # JOIN BETWEEN WATCH-NEXT AND TALKS INFORMATION
-watch_next_dataset=watch_next_dataset.join(tedx_dataset,tedx_dataset.idx == watch_next_dataset.watch_next_idx)
+watch_next_dataset=watch_next_dataset.join(tedx_dataset_agg,tedx_dataset_agg._id == watch_next_dataset.watch_next_idx)
 watch_next_dataset.printSchema()
 
-# AGGREGATE THE WATCH-NEXT
-watch_next_dataset_agg=watch_next_dataset.groupBy(col("id").alias("idx_ref_2")).agg(collect_list(struct("url","watch_next_idx","main_speaker","title","details","posted","num_views")).alias("watch_next"))
+# AGGREGATE THE WATCH-NEXT INFORMATION
+watch_next_dataset_agg=watch_next_dataset.groupBy(col("id").alias("idx_ref_2")).agg(collect_list(struct("url","watch_next_idx","main_speaker","title","details","posted","n_views","durate_sec","tags")).alias("watch_next"))
 #watch_next_dataset_agg.printSchema()
 
 # JOIN BETWEEN THE DATA AGGREGATE BEFORE AND THE WATCH-NEXT
-tedx_dataset_agg_f = tedx_dataset_agg.join(watch_next_dataset_agg, tedx_dataset_agg._id == watch_next_dataset_agg.idx_ref_2, "left") \
+tedx_dataset_agg = tedx_dataset_agg.join(watch_next_dataset_agg, tedx_dataset_agg._id == watch_next_dataset_agg.idx_ref_2, "left") \
     .drop("idx_ref_2")
 
-#tedx_dataset_agg_f.printSchema()
+#tedx_dataset_agg.printSchema()
+
+## READ TRANSCRIPTION DATASET
+transcription_dataset_path = "s3://unibg-data-2021-bordogna-filippo/tedx_transcriptions.csv"
+#barce# watch_next_dataset_path =
+#cassi# watch_next_dataset_path =
+
+transcription_dataset = spark.read.option("header","true").csv(transcription_dataset_path)
+
+# DROP THE DUPLICATE ROWS
+transcription_dataset=transcription_dataset.dropDuplicates()
+
+# AGGREGATE THE TRANSCRIPTION INFORMATION
+transcription_dataset_agg=transcription_dataset.groupBy(col("id").alias("idt")).agg(collect_list(struct("language","abbreviation","phrase")).alias("transcriptions"))
+#transcription_dataset_agg.printSchema()
+
+# JOIN BETWEEN THE DATA AGGREGATE BEFORE AND THE WATCH-NEXT
+tedx_dataset_agg = tedx_dataset_agg.join(transcription_dataset_agg, tedx_dataset_agg._id == transcription_dataset_agg.idt, "left") \
+    .drop("idt")
+
+tedx_dataset_agg.printSchema()
 
 mongo_uri = "mongodb://clustertcm-shard-00-00.nvexe.mongodb.net:27017,clustertcm-shard-00-01.nvexe.mongodb.net:27017,clustertcm-shard-00-02.nvexe.mongodb.net:27017"
 #barce# mongo_uri = "mongodb://tcm-shard-00-00.d0u9l.mongodb.net:27017,tcm-shard-00-01.d0u9l.mongodb.net:27017,tcm-shard-00-02.d0u9l.mongodb.net:27017"
@@ -106,6 +131,6 @@ write_mongo_options = {
     "ssl": "true",
     "ssl.domain_match": "false"}
 from awsglue.dynamicframe import DynamicFrame
-tedx_dataset_dynamic_frame = DynamicFrame.fromDF(tedx_dataset_agg_f, glueContext, "nested")
+tedx_dataset_dynamic_frame = DynamicFrame.fromDF(tedx_dataset_agg, glueContext, "nested")
 
 glueContext.write_dynamic_frame.from_options(tedx_dataset_dynamic_frame, connection_type="mongodb", connection_options=write_mongo_options)
