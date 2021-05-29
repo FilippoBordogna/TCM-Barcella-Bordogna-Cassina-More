@@ -6,4 +6,4 @@ Autori: Bordogna Filippo, Barcella Gabriele, Cassina Andrea, Morè Gabriele
 
 Compito 1: OK
 Compito 2: OK
-Compito 3: Presentazioni
+Compito 3: OK
